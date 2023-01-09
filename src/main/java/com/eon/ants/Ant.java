@@ -1,17 +1,20 @@
 package com.eon.ants;
 
-import com.eon.ants.concurrrency.LockObject;
+import com.eon.ants.concurrrency.ACOLockObject;
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-import static com.eon.ants.ProblemSpace.nodeNames;
 
 @Component
+@Data
 public class Ant implements Runnable{
 
 	public static final double PHEREMONES = 2.3;
+	@Autowired
+	private String[] nodeNames;
 	private final Random random = new Random();
 	private ProblemSpace problemSpace;
 	private String startingNode;
@@ -19,14 +22,22 @@ public class Ant implements Runnable{
 	private double pathDistance = Double.MIN_NORMAL;
 	private List<String> pathTaken = new ArrayList<>();
 
-	public Ant(ProblemSpace route) {
-		this.problemSpace = route;
+	public Ant(ProblemSpace attractionMap) {
+		this.problemSpace = attractionMap;
+	}
+
+	public List<String> getPathTaken() {
+		return pathTaken;
+	}
+
+	public double getPathDistance() {
+		return pathDistance;
 	}
 
 	@Autowired
 	private PheremoneManager mgr;
 	@Autowired
-	private LockObject lockObject;
+	private ACOLockObject lockObject;
 	@Override
 	public void run() {
 		startOnRandomNode();
@@ -37,9 +48,15 @@ public class Ant implements Runnable{
 		}
 		moveToNextNode();
 	}
+	protected void startOn(String startingNode){
+		this.startingNode = startingNode;
+		this.currentNode = startingNode;
+		pathTaken.add(startingNode);
+	}
 	protected void startOnRandomNode(){
 		int indexOfStartNode = random.nextInt(nodeNames.length-1);
 		this.startingNode = nodeNames[indexOfStartNode];
+		this.currentNode = this.startingNode;
 		pathTaken.add(this.startingNode);
 
 	}
