@@ -2,16 +2,17 @@ package com.eon.ants;
 
 import com.eon.ants.concurrrency.ACOLockObject;
 import lombok.Data;
+import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import javax.swing.event.ListDataEvent;
+import java.util.*;
+import java.util.stream.Collectors;
 
-@Component
 @Slf4j
 @Data
 public class ProblemSpace {
@@ -31,6 +32,23 @@ public class ProblemSpace {
 	protected static final short ALPHA = 1;
 	protected static final short BETA = 2;
 
+	@Getter
+	private class AntsProbablePath{
+
+		private String nodeName;
+		private double probability;
+		private Range<Double> rangeOfProbabilities;
+
+		public AntsProbablePath(String nodeName, double probability){
+			this.nodeName=nodeName;
+			this.probability=probability;
+		}
+		public void setRangeOfProbabilities(Range<Double> rangeOfProbabilities){
+			this.rangeOfProbabilities=rangeOfProbabilities;
+		}
+
+	}
+
 	/**
 	 * Given two distinct, full paths, this returns
 	 * the shortest path, in terms of distance.
@@ -48,39 +66,78 @@ public class ProblemSpace {
 
 	/**
 	 *
-	 * @param start
 	 * @param destination
 	 * @return
 	 */
-	protected double probabilityChoosingPath(Ant ant, String start, String destination){
+	protected double probabilityChoosingPath(Ant ant, String destination){
 		double denominator=0;
-		for(String possibleDestinationN:possibleDestinations(start,ant)){
-			denominator+= getNumerator(start,possibleDestinationN);
+		for(String possibleDestinationN:possibleDestinations(ant)){
+			if(!Arrays.asList(nodeNames).contains(ant.getCurrentNode()))
+				System.out.println();
+			denominator+= getNumerator(ant.getCurrentNode(),possibleDestinationN);
 
 		}
-		return getNumerator(start, destination)/denominator;
+
+		return getNumerator(ant.getCurrentNode(), destination)/denominator;
 	}
 
 	private double getNumerator(String start, String destination) {
+		if(!Arrays.asList(nodeNames).contains(start))
+			System.out.println();
 		double pheremoneLevelFromTo = pheremoneManager.getPheremoneLevel(start, destination);
 		double topA = Math.pow(pheremoneLevelFromTo, ALPHA);
 		double topB = Math.pow(1/getDistance(start, destination),BETA);
 		return topA * topB;
 	}
 
-	private String[] possibleDestinations(String startingNode, Ant ant){
-		if(!ant.getPathTaken().contains(startingNode))
-			throw new IllegalStateException("Ant's path, "+ant.getPathTaken()+", must contain starting node, "+startingNode);
-		String[] possibleDestinations = new String[nodeNames.length-1];
-		int counter = 0;
-		List<String>availableLocations =  new ArrayList<>(Arrays.stream(nodeNames).toList());
-		availableLocations.removeAll(ant.getPathTaken());
-		availableLocations.remove(startingNode);
-		for(String node : availableLocations) {
-			if (!node.equals(startingNode))
-				possibleDestinations[counter++] = node;
+	private String[] possibleDestinations(Ant ant){
+		return ant.getAttractionsLeft();
+	}
+
+	List<AntsProbablePath> antsProbablePaths = new ArrayList<>();
+	protected String chooseNextNode(Ant ant){
+
+		List<AntsProbablePath> antsProbablePaths = new ArrayList<>();
+		List<String> attractionsLeft = new ArrayList<>(Arrays.asList(ant.getAttractionsLeft()));
+		for (String attraction : attractionsLeft)
+			antsProbablePaths.add(new AntsProbablePath(attraction, probabilityChoosingPath(ant, attraction)));
+
+		antsProbablePaths.sort(Comparator.comparing(a -> a.probability));
+
+		List<Range<Double>> ranges = new ArrayList<>();
+		double lowerBound =0,upperBound = 0;
+		for(AntsProbablePath ppath: antsProbablePaths){
+
+			Range<Double> probabilityRange = Range.between(lowerBound, ppath.getProbability());
+			lowerBound =ppath.getProbability()+0.001;
+			ranges.add(probabilityRange);
+			ppath.setRangeOfProbabilities(probabilityRange);
+			upperBound = ppath.getProbability();
 		}
-		return availableLocations.toArray(new String[0]);
+		String nodeName = getNodeName(antsProbablePaths, upperBound);
+		if(ant.getPathTaken().contains(nodeName))
+			throw new IllegalStateException("oops!");
+		return nodeName;
+	}
+
+	private String getNodeName(List<AntsProbablePath> antsProbablePaths, double upperBound) {
+		double randomDouble=0;
+		try {
+			randomDouble = new Random().nextDouble(upperBound);
+		}catch (IllegalArgumentException iae){
+			log.error("upperBound is not valid [{}]",upperBound);
+			return  this.nodeNames[new Random().nextInt(this.nodeNames.length)];
+
+		}
+		String returnVal = "";
+		outerFor: for(Range<Double> rangeOfDoubles: antsProbablePaths.stream().map(pp->pp.rangeOfProbabilities).collect(Collectors.toList())){
+			if(rangeOfDoubles.contains(randomDouble)) {
+				AntsProbablePath attraction = antsProbablePaths.stream().filter(att -> att.getRangeOfProbabilities().equals(rangeOfDoubles)).findFirst().get();
+				returnVal = attraction.getNodeName();
+				break outerFor;
+			}
+		}
+		return returnVal;
 	}
 
 	/**

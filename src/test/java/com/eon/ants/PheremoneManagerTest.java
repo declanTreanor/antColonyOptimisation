@@ -26,4 +26,9 @@ class PheremoneManagerTest {
 		assertEquals(11.0,mgr.getPheremoneLevel("swings","balloon"));
 
 	}
+
+	@Test
+	void displayShortestPath() {
+
+	}
 }

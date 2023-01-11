@@ -1,64 +1,44 @@
 package com.eon.ants;
 
 //import jdk.incubator.concurrent.StructuredTaskScope;
+import com.eon.ants.config.ACOConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 
 @SpringBootApplication
 public class AntsApplication {
-	private double[][] distanceMatrix={ { 0, 8, 7, 4, 6, 4 },
-			{ 8, 0, 5, 7, 11, 5 },
-			{ 7, 5, 0, 9, 6, 7 },
-			{ 4, 7, 9, 0, 5, 6 },
-			{ 6, 11, 6, 5, 0, 3 },
-			{ 4, 5, 7, 6, 3, 0 }
-	};
-
-//	protected class AntPathScope extends StructuredTaskScope<List<String>>{
-//		private List<String> shortestPath;
-//		//Here! get fastest ANT!
-//		protected List<String> getShortestPath(){
-//			return null;
-//		}
-//
-//		@Override
-//		protected void handleComplete(Future<List<String>> future) {
-//			super.handleComplete(future);
-//			switch(future.state()){
-//				case RUNNING -> throw new RuntimeException("oops");
-//				case SUCCESS -> {
-//					try {
-//						updateShortestPath(future.get());
-//					} catch (InterruptedException e) {
-//						throw new RuntimeException(e);
-//					} catch (ExecutionException e) {
-//						throw new RuntimeException(e);
-//					}
-//				}
-//			}
-//
-//		}
-//
-//		private void updateShortestPath(List<String> path) {
-//			if(isShorter(path)){
-//				this.shortestPath = path;
-//			}
-//		};
-//
-//		private boolean isShorter(List<String> path) {
-//			return false;
-//
-//
-//
-//		}
-//	}
 	public static void main(String[] args) throws InterruptedException {
 		SpringApplication.run(AntsApplication.class, args);
 //		new AntsApplication().findShortestPath();
+		ApplicationContext ctx = new AnnotationConfigApplicationContext(ACOConfig.class);
+		PheremoneManager pheremoneManager = null;
+		Ant ant = null;
+		for(int i =1000; i>0; i--){
+			if(i%5==0){
+				pheremoneManager = (PheremoneManager) ctx.getBean("PheremoneManager");
+				pheremoneManager.evaporate(0.7D);
+
+			}
+
+			ant = (Ant) ctx.getBean("Ant");
+			ant.startOn("swings");
+			while(ant.getPathTaken().size()<ant.getNodeNames().length) {
+				/**
+				 * this was necessary because of an inexplicable (by me) bug.
+				 */
+				if("".equals(ant.getCurrentNode()))
+					ant.startOnRandomNode();
+
+				ant.moveToNext();
+			}
+		}
+		System.out.println(ant.toString());
+		double [][] pheremoneTrails = ant.getPheremoneManager().getPheremoneTrails();
+		System.out.println(pheremoneManager.displayShortestPath());
 
 	}
 
