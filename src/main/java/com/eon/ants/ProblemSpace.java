@@ -32,8 +32,12 @@ public class ProblemSpace {
 	protected static final short ALPHA = 1;
 	protected static final short BETA = 2;
 
+	public ProblemSpace(double [][] pheremones){
+		this.pheremones = pheremones;
+	}
 	@Getter
 	private class AntsProbablePath{
+
 
 		private String nodeName;
 		private double probability;
@@ -96,6 +100,7 @@ public class ProblemSpace {
 
 	List<AntsProbablePath> antsProbablePaths = new ArrayList<>();
 	protected String chooseNextNode(Ant ant){
+
 
 		List<AntsProbablePath> antsProbablePaths = new ArrayList<>();
 		List<String> attractionsLeft = new ArrayList<>(Arrays.asList(ant.getAttractionsLeft()));
@@ -178,10 +183,5 @@ public class ProblemSpace {
 		}
 		return distance;
 	}
-
-	/**
-	 *
-	 */
-	private double totalPheremones;
 
 }

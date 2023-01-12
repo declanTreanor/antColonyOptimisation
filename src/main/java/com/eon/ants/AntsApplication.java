@@ -17,10 +17,10 @@ public class AntsApplication {
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ACOConfig.class);
 		PheremoneManager pheremoneManager = null;
 		Ant ant = null;
-		for(int i =1000; i>0; i--){
+		for(int i =3000; i>0; i--){
 			if(i%5==0){
 				pheremoneManager = (PheremoneManager) ctx.getBean("PheremoneManager");
-				pheremoneManager.evaporate(0.7D);
+				pheremoneManager.evaporate(0.9D);
 
 			}
 
@@ -33,7 +33,7 @@ public class AntsApplication {
 				if("".equals(ant.getCurrentNode()))
 					ant.startOnRandomNode();
 
-				ant.moveToNext();
+				ant.moveToNextNode();
 			}
 		}
 		System.out.println(ant.toString());
@@ -42,26 +42,5 @@ public class AntsApplication {
 
 	}
 
-//	private void findShortestPath() throws InterruptedException {
-//		try (var scope = new AntPathScope()) {
-//			for(int i=0; i<100; i++) {
-//				scope.fork(() -> getShortestPath());
-//			}
-//
-//
-//			scope.join(); //blocking
-//
-//			//			return scope.result();
-//		}
-//
-//	}
-
-	private List<String> getShortestPath() {
-
-		ProblemSpace ps = new ProblemSpace();
-		Ant ant = new Ant(ps);
-		ant.run();
-		return ant.getPathTaken();
-	}
 
 }

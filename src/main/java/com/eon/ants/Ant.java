@@ -6,9 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import java.util.*;
 
-
 @Data
-public class Ant implements Runnable{
+public class Ant implements Runnable {
 
 	public static final double PHEREMONES = 2.3;
 	@Autowired
@@ -37,6 +36,7 @@ public class Ant implements Runnable{
 
 	@Autowired
 	private ACOLockObject lockObject;
+
 	@Override
 	public void run() {
 		startOnRandomNode();
@@ -47,21 +47,21 @@ public class Ant implements Runnable{
 		}
 		moveToNextNode();
 	}
-	public void moveToNext(){
 
-
-		String nextNode = problemSpace.chooseNextNode(this);
-		if(!Arrays.asList(this.pathTaken).contains(nextNode))
-			System.out.println();
-		this.pathTaken.add(nextNode);
-		try {
-			this.pheremoneManager.dropPheremone(this.getCurrentNode(), nextNode);
-		}catch (IndexOutOfBoundsException ioobe){
-			this.startOnRandomNode();
-		}
-		this.setCurrentNode(nextNode);
-
-	}
+//	public void moveToNext() {
+//
+//		String nextNode = problemSpace.chooseNextNode(this);
+//		if (!Arrays.asList(this.pathTaken).contains(nextNode))
+//			System.out.println();
+//		this.pathTaken.add(nextNode);
+//		try {
+//			this.pheremoneManager.dropPheremone(this.getCurrentNode(), nextNode);
+//		} catch (IndexOutOfBoundsException ioobe) {
+//			this.startOnRandomNode();
+//		}
+//		this.setCurrentNode(nextNode);
+//
+//	}
 
 	@Override
 	public String toString() {
@@ -78,36 +78,32 @@ public class Ant implements Runnable{
 				'}';
 	}
 
-	protected void startOn(String startingNode){
+	protected void startOn(String startingNode) {
 		this.startingNode = startingNode;
 		this.currentNode = startingNode;
 		pathTaken.add(startingNode);
 	}
-	protected void startOnRandomNode(){
- 		this.pathTaken=new ArrayList<>();
-		int indexOfStartNode = random.nextInt(nodeNames.length-1);
+
+	protected void startOnRandomNode() {
+		this.pathTaken = new ArrayList<>();
+		int indexOfStartNode = random.nextInt(nodeNames.length - 1);
 		this.startingNode = nodeNames[indexOfStartNode];
 		this.currentNode = this.startingNode;
 		this.pathTaken.add(this.startingNode);
 
 	}
-	protected void moveToNextNode(){
 
+	protected void moveToNextNode() {
 
-		String[] attractionsLeft = getAttractionsLeft();
-
-		int indexOfNextAttraction=random.nextInt(attractionsLeft.length-1);
-		String nextName = attractionsLeft[indexOfNextAttraction];
-		int realIndexOfNext = Arrays.asList(nodeNames).indexOf(nextName);
-
+		String nextName = problemSpace.chooseNextNode(this);
 		this.pathTaken.add(nextName);
+		pheremoneManager.consistencyCheck(Arrays.asList(nodeNames).indexOf(currentNode),Arrays.asList(nodeNames).indexOf(nextName));
 		pheremoneManager.dropPheremone(Arrays.asList(nodeNames).indexOf(currentNode), Arrays.asList(nodeNames).indexOf(nextName));
 		this.currentNode = nextName;
-		;
 
 	}
 
-	protected String[] getAttractionsLeft(){
+	protected String[] getAttractionsLeft() {
 		List<String> list = new ArrayList<>(Arrays.asList(nodeNames));
 		list.removeAll(this.pathTaken);
 		return list.toArray(new String[0]);

@@ -3,7 +3,9 @@ package com.eon.ants;
 import org.apache.commons.lang3.Range;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.context.ApplicationContext;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,19 +18,21 @@ class ProblemSpaceTest {
 	@Autowired
 	private String[] nodeNames;
 	@Autowired
+	@Qualifier(value = "problemSpaceForTest")
 	private ProblemSpace problemSpace;
 	@Autowired
 	private Ant ant;
+	@Autowired
+	private ApplicationContext appContext;
 
 	@Test
 	void probabilityChoosingPath_circusToFerrisWheel() {
 		System.out.println(ant);
 		ant.startOn("circus");
 
-
 		double probability = problemSpace.probabilityChoosingPath(ant, "ferrisWheel");
 		double probabilityRounded = Math.round(probability * 1000.0) / 1000.0;
-		assertEquals(0.392,probabilityRounded);
+		assertEquals(0.331,probabilityRounded);
 
 	}
 

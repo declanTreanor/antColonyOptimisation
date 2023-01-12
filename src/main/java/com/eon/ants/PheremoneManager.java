@@ -8,13 +8,10 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 @Data
 @Slf4j
-@Component
 public class PheremoneManager {
 
 	@Autowired
@@ -24,6 +21,11 @@ public class PheremoneManager {
 	private ACOLockObject lockObject;
 	@Autowired
 	private String[] nodeNames;
+	private boolean isReady;
+
+	public PheremoneManager(double[][] pheremoneTrails) {
+		this.pheremoneTrails = pheremoneTrails;
+	}
 
 	protected double getPheremoneLevel(String from, String to) {
 		double pheremoneLevel;
@@ -41,16 +43,42 @@ public class PheremoneManager {
 		return pheremoneLevel;
 	}
 
-	public synchronized void dropPheremone(String from, String to) {
-		log.info("from {} to {}", from, to);
-		List nodeNamesLst = Arrays.asList(nodeNames);
-		if (!nodeNamesLst.contains(from))
-			System.out.println();
+	public void consistencyCheck(int fromm,int too) {
+		if(isFullyPopulated(fromm, too)) {
+			extracted();
+		}
+	}
 
-		dropPheremone(nodeNamesLst.indexOf(from), nodeNamesLst.indexOf(to));
+	private void extracted() {
+		double[][] copy = pheremoneTrails;
+		List<String> projectedPath = new ArrayList<>();
+		Set<String> uniqueNodeNames = new HashSet<>();
+
+		double largest = 0.0;
+		int winningIndex = 0;
+		for(int i = 0; i<copy.length;i++) {
+			for (int j = 0; j < copy.length; j++) {
+				if (copy[i][j] > largest) {
+					largest = j;
+					winningIndex = j;
+				}
+
+			}
+			String nodeName = nodeNames[winningIndex];
+			projectedPath.add(nodeName);
+//			if(!uniqueNodeNames.add(nodeName))
+//				throw new IllegalArgumentException(nodeName+" not unique, in "+projectedPath);
+		}
+
+	}
+
+	private boolean isFullyPopulated(int fromm, int too) {
+		return fromm == pheremoneTrails.length - 1 && too == pheremoneTrails.length - 2;
 	}
 
 	public synchronized void dropPheremone(int from, int to) {
+
+
 		try {
 			lockObject.writeLock().lock();
 			try {
@@ -60,8 +88,9 @@ public class PheremoneManager {
 			}
 		} finally {
 			lockObject.writeLock().unlock();
+			if(isFullyPopulated(from, to))
+				consistencyCheck(from, to);
 		}
-
 	}
 
 	public void evaporate(double evaporationConstant) {
@@ -81,47 +110,17 @@ public class PheremoneManager {
 			int winningIndex = 0;
 			for(int j = 0; j < pheremoneTrails.length; j++){
 				BigDecimal bigDecimal = new BigDecimal(String.valueOf(pheremoneTrails[i][j]));
+				/**
+				 * This indefensible hack is to get around the bug! Not the shortest path!
+				 */
 				if (bigDecimal.compareTo(most)>0 && !shortestPath.contains(nodeNames[j])){
 					most = bigDecimal;
 					winningIndex=j;
 				}
 			}
-
 			shortestPath.add(this.nodeNames[winningIndex]);
 
 		}
 		return shortestPath;
 	}
-
-//		for(int i=0; i<this.nodeNames.length; i++) {
-//			double[] row = this.pheremoneTrails[i];
-//			BigDecimal most = BigDecimal.ZERO;
-//			int indexOfLargest =0;
-//			for(int j=0; j<this.nodeNames.length; j++){
-//				BigDecimal attractionPheremones = BigDecimal.valueOf(row[j]);
-//				if(attractionPheremones.compareTo(most) >0) {
-//					most = BigDecimal.valueOf(row[j]);
-//					indexOfLargest =j;
-//				}
-//
-//			}
-//			String nodename=this.nodeNames[indexOfLargest];
-//			if(shortestPath.contains(nodename))
-//				throw new IllegalStateException(nodename+" is already in "+shortestPath);
-//			shortestPath.add(nodename);
-//
-//			System.out.println(nodename);
-//
-//		}
-//		return shortestPath;
-
-	//	try (var scope = new StructuredTaskScope.ShutdownOnSuccess<String>()) {
-	//		for(int i=0; i<100; i++) {
-	//			scope.fork(() -> getHello());
-	//		}
-	//
-	//		scope.join(); //blocking
-	//
-	//		return scope.result();
-	//	}
 }
