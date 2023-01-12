@@ -111,7 +111,7 @@ public class PheremoneManager {
 			for(int j = 0; j < pheremoneTrails.length; j++){
 				BigDecimal bigDecimal = new BigDecimal(String.valueOf(pheremoneTrails[i][j]));
 				/**
-				 * This indefensible hack is to get around the bug! Not the shortest path!
+				 * This indefensible hack is to get around the bug! Not the shortest path! :(
 				 */
 				if (bigDecimal.compareTo(most)>0 && !shortestPath.contains(nodeNames[j])){
 					most = bigDecimal;

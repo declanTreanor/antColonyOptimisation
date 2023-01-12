@@ -17,7 +17,7 @@ public class AntsApplication {
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ACOConfig.class);
 		PheremoneManager pheremoneManager = null;
 		Ant ant = null;
-		for(int i =3000; i>0; i--){
+		for(int i =9000; i>0; i--){
 			if(i%5==0){
 				pheremoneManager = (PheremoneManager) ctx.getBean("PheremoneManager");
 				pheremoneManager.evaporate(0.9D);
