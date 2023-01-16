@@ -7,8 +7,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
-import java.util.List;
-
 @SpringBootApplication
 public class AntsApplication {
 	public static void main(String[] args) throws InterruptedException {
@@ -17,15 +15,20 @@ public class AntsApplication {
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ACOConfig.class);
 		PheremoneManager pheremoneManager = null;
 		Ant ant = null;
-		for(int i =9000; i>0; i--){
+		for(int i =10000; i>0; i--){
 			if(i%5==0){
 				pheremoneManager = (PheremoneManager) ctx.getBean("PheremoneManager");
 				pheremoneManager.evaporate(0.9D);
 
 			}
+			if(pheremoneManager.getAllRoutes() != null && i%7==0){
+				pheremoneManager.rewardBestOfTen();
+				pheremoneManager.shitTax();
+			}
 
 			ant = (Ant) ctx.getBean("Ant");
-			ant.startOn("swings");
+			ant.startOnRandomNode();
+
 			while(ant.getPathTaken().size()<ant.getNodeNames().length) {
 				/**
 				 * this was necessary because of an inexplicable (by me) bug.
@@ -34,8 +37,12 @@ public class AntsApplication {
 					ant.startOnRandomNode();
 
 				ant.moveToNextNode();
+				pheremoneManager.saveRoute(ant);
 			}
+
 		}
+
+
 		System.out.println(ant.toString());
 		double [][] pheremoneTrails = ant.getPheremoneManager().getPheremoneTrails();
 		System.out.println(pheremoneManager.displayShortestPath());

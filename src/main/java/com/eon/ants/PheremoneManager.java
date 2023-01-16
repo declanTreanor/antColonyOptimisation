@@ -5,7 +5,6 @@ import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Component;
 
 import java.math.BigDecimal;
 import java.util.*;
@@ -22,6 +21,7 @@ public class PheremoneManager {
 	@Autowired
 	private String[] nodeNames;
 	private boolean isReady;
+	private Map<Double, List<String>> allRoutes;
 
 	public PheremoneManager(double[][] pheremoneTrails) {
 		this.pheremoneTrails = pheremoneTrails;
@@ -43,20 +43,20 @@ public class PheremoneManager {
 		return pheremoneLevel;
 	}
 
-	public void consistencyCheck(int fromm,int too) {
-		if(isFullyPopulated(fromm, too)) {
-			extracted();
+	public void consistencyCheck(int fromm, int too) {
+		if (isFullyPopulated(fromm, too)) {
+			checkForDuplicates();
 		}
 	}
 
-	private void extracted() {
+	private void checkForDuplicates() {
 		double[][] copy = pheremoneTrails;
 		List<String> projectedPath = new ArrayList<>();
 		Set<String> uniqueNodeNames = new HashSet<>();
 
 		double largest = 0.0;
 		int winningIndex = 0;
-		for(int i = 0; i<copy.length;i++) {
+		for (int i = 0; i < copy.length; i++) {
 			for (int j = 0; j < copy.length; j++) {
 				if (copy[i][j] > largest) {
 					largest = j;
@@ -66,8 +66,8 @@ public class PheremoneManager {
 			}
 			String nodeName = nodeNames[winningIndex];
 			projectedPath.add(nodeName);
-//			if(!uniqueNodeNames.add(nodeName))
-//				throw new IllegalArgumentException(nodeName+" not unique, in "+projectedPath);
+			//			if(!uniqueNodeNames.add(nodeName))
+			//				throw new IllegalArgumentException(nodeName+" not unique, in "+projectedPath);
 		}
 
 	}
@@ -76,8 +76,7 @@ public class PheremoneManager {
 		return fromm == pheremoneTrails.length - 1 && too == pheremoneTrails.length - 2;
 	}
 
-	public synchronized void dropPheremone(int from, int to) {
-
+	public synchronized void dropPheremone(Ant ant, int from, int to) {
 
 		try {
 			lockObject.writeLock().lock();
@@ -88,7 +87,7 @@ public class PheremoneManager {
 			}
 		} finally {
 			lockObject.writeLock().unlock();
-			if(isFullyPopulated(from, to))
+			if (isFullyPopulated(from, to))
 				consistencyCheck(from, to);
 		}
 	}
@@ -108,19 +107,55 @@ public class PheremoneManager {
 		for (int i = 0; i < pheremoneTrails.length; i++) {
 			BigDecimal most = BigDecimal.ZERO;
 			int winningIndex = 0;
-			for(int j = 0; j < pheremoneTrails.length; j++){
+			for (int j = 0; j < pheremoneTrails.length; j++) {
 				BigDecimal bigDecimal = new BigDecimal(String.valueOf(pheremoneTrails[i][j]));
 				/**
 				 * This indefensible hack is to get around the bug! Not the shortest path! :(
 				 */
-				if (bigDecimal.compareTo(most)>0 && !shortestPath.contains(nodeNames[j])){
+				if (bigDecimal.compareTo(most) > 0) {
 					most = bigDecimal;
-					winningIndex=j;
+					winningIndex = j;
 				}
 			}
 			shortestPath.add(this.nodeNames[winningIndex]);
 
 		}
 		return shortestPath;
+	}
+
+	public void saveRoute(Ant ant) {
+		if (allRoutes == null)
+			allRoutes = new TreeMap<>();
+		allRoutes.put(ant.getPathDistance(), ant.getPathTaken());
+		System.out.println(allRoutes);
+	}
+
+	public void shitTax() {
+		List<Map.Entry<Double, List<String>>> b5 = allRoutes.entrySet().stream().filter(es->es.getKey()>30).toList();
+		b5.forEach(route -> multiplyEach(route.getValue(),.5));
+	}
+
+	private void multiplyEach(List<String> path, double multiplier) {
+		String from = "";
+		for (String node : path) {
+			if (from.equals("") )
+				from = node;
+			else {
+				try {
+					int indexFrom = Arrays.asList(nodeNames).indexOf(from);
+					int indexTo = Arrays.asList(nodeNames).indexOf(node);
+					from = node;
+					pheremoneTrails[indexFrom][indexTo] = pheremoneTrails[indexFrom][indexTo] * multiplier;
+				} catch (ArrayIndexOutOfBoundsException aioob) {
+					System.out.println();
+				}
+			}
+		}
+	}
+	public void rewardBestOfTen () {
+		int indexOfBest = allRoutes.entrySet().stream().toList().size() - 1;
+		List<String> best = allRoutes.entrySet().stream().toList().get(indexOfBest).getValue();
+		multiplyEach(best, 2.0);
+
 	}
 }

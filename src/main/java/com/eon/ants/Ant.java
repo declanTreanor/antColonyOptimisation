@@ -79,15 +79,20 @@ public class Ant implements Runnable {
 	}
 
 	protected void startOn(String startingNode) {
+		this.pathDistance=0.0;
 		this.startingNode = startingNode;
 		this.currentNode = startingNode;
 		pathTaken.add(startingNode);
 	}
 
 	protected void startOnRandomNode() {
+		this.pathDistance=0.0;
 		this.pathTaken = new ArrayList<>();
 		int indexOfStartNode = random.nextInt(nodeNames.length - 1);
+
 		this.startingNode = nodeNames[indexOfStartNode];
+		if(this.startingNode.equals(""))
+			throw new IllegalStateException("starting node is blank!!");
 		this.currentNode = this.startingNode;
 		this.pathTaken.add(this.startingNode);
 
@@ -95,10 +100,16 @@ public class Ant implements Runnable {
 
 	protected void moveToNextNode() {
 
+
 		String nextName = problemSpace.chooseNextNode(this);
 		this.pathTaken.add(nextName);
+		int indexCurrent = Arrays.asList(nodeNames).indexOf(currentNode);
+		int indexNext= Arrays.asList(nodeNames).indexOf(nextName);
+
 		pheremoneManager.consistencyCheck(Arrays.asList(nodeNames).indexOf(currentNode),Arrays.asList(nodeNames).indexOf(nextName));
-		pheremoneManager.dropPheremone(Arrays.asList(nodeNames).indexOf(currentNode), Arrays.asList(nodeNames).indexOf(nextName));
+		this.pathDistance+=problemSpace.getAdjacencyMatrix()[indexCurrent][indexNext];
+
+		pheremoneManager.dropPheremone(this,indexCurrent,indexNext);
 		this.currentNode = nextName;
 
 	}

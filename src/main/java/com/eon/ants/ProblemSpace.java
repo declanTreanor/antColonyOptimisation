@@ -35,23 +35,6 @@ public class ProblemSpace {
 	public ProblemSpace(double [][] pheremones){
 		this.pheremones = pheremones;
 	}
-	@Getter
-	private class AntsProbablePath{
-
-
-		private String nodeName;
-		private double probability;
-		private Range<Double> rangeOfProbabilities;
-
-		public AntsProbablePath(String nodeName, double probability){
-			this.nodeName=nodeName;
-			this.probability=probability;
-		}
-		public void setRangeOfProbabilities(Range<Double> rangeOfProbabilities){
-			this.rangeOfProbabilities=rangeOfProbabilities;
-		}
-
-	}
 
 	/**
 	 * Given two distinct, full paths, this returns
@@ -107,25 +90,29 @@ public class ProblemSpace {
 		for (String attraction : attractionsLeft)
 			antsProbablePaths.add(new AntsProbablePath(attraction, probabilityChoosingPath(ant, attraction)));
 
-		antsProbablePaths.sort(Comparator.comparing(a -> a.probability));
+		antsProbablePaths.sort(Comparator.comparing(a -> a.getProbability()));
 
 		List<Range<Double>> ranges = new ArrayList<>();
-		double lowerBound =0,upperBound = 0;
+		double lowerBound =0,overallLargestProbability = 0;
 		for(AntsProbablePath ppath: antsProbablePaths){
 
 			Range<Double> probabilityRange = Range.between(lowerBound, ppath.getProbability());
-			lowerBound =ppath.getProbability()+0.001;
+			lowerBound =ppath.getProbability();
 			ranges.add(probabilityRange);
 			ppath.setRangeOfProbabilities(probabilityRange);
-			upperBound = ppath.getProbability();
+			overallLargestProbability = ppath.getProbability();
 		}
-		String nodeName = getNodeName(antsProbablePaths, upperBound);
-		if(ant.getPathTaken().contains(nodeName))
-			throw new IllegalStateException("oops!");
+		String nodeName = getNodeName(antsProbablePaths, overallLargestProbability);
+		if(ant.getPathTaken().contains(nodeName)) {
+			while(ant.getPathTaken().contains(nodeName)){
+				nodeName = nodeNames[new Random().nextInt(nodeNames.length-1)];
+			}
+
+		}
 		return nodeName;
 	}
 
-	private String getNodeName(List<AntsProbablePath> antsProbablePaths, double upperBound) {
+	protected String getNodeName(List<AntsProbablePath> antsProbablePaths, double upperBound) {
 		double randomDouble=0;
 		try {
 			randomDouble = new Random().nextDouble(upperBound);
@@ -134,14 +121,19 @@ public class ProblemSpace {
 			return  this.nodeNames[new Random().nextInt(this.nodeNames.length)];
 
 		}
+		/**
+		 * here lies the problem:
+		 */
 		String returnVal = "";
-		outerFor: for(Range<Double> rangeOfDoubles: antsProbablePaths.stream().map(pp->pp.rangeOfProbabilities).collect(Collectors.toList())){
+		outerFor: for(Range<Double> rangeOfDoubles: antsProbablePaths.stream().map(pp->pp.getRangeOfProbabilities()).collect(Collectors.toList())){
 			if(rangeOfDoubles.contains(randomDouble)) {
 				AntsProbablePath attraction = antsProbablePaths.stream().filter(att -> att.getRangeOfProbabilities().equals(rangeOfDoubles)).findFirst().get();
 				returnVal = attraction.getNodeName();
 				break outerFor;
 			}
 		}
+		if(returnVal.equals(""))
+			returnVal = nodeNames[new Random().nextInt(nodeNames.length-1)];
 		return returnVal;
 	}
 

@@ -64,4 +64,35 @@ class ProblemSpaceTest {
 		exhibits.add("carousel");
 		return exhibits;
 	}
+
+	@Test
+	void getNodeNames() {
+		/**
+		 * swings 0.06648930531397114
+		 * circus 0.1257063428592267
+		 * carousel 0.16418787638756138
+		 * bumpers 0.3218082377196204
+		 * ferrisWheel 0.3218082377196204
+		 */
+		List<AntsProbablePath> listOfAntsProbablePaths = new ArrayList<>();
+
+		listOfAntsProbablePaths.add(new AntsProbablePath("swings", 0.06648930531397114));
+		listOfAntsProbablePaths.add(new AntsProbablePath("circus", 0.1257063428592267));//List<AntsProbablePath> antsProbablePaths, double upperBound
+		listOfAntsProbablePaths.add(new AntsProbablePath("carousel", 0.16418787638756138));//List<AntsProbablePath> antsProbablePaths, double upperBound
+		listOfAntsProbablePaths.add(new AntsProbablePath("bumpers", 0.3218082377196204));//List<AntsProbablePath> antsProbablePaths, double upperBound
+		listOfAntsProbablePaths.add(new AntsProbablePath("ferrisWheel", 0.3218082377196204));
+		double lowerBound= 0,upperBound=0;
+		List<Range<Double>> ranges = new ArrayList<>();
+		for(AntsProbablePath ppath: listOfAntsProbablePaths){
+
+			Range<Double> probabilityRange = Range.between(lowerBound, ppath.getProbability());
+			lowerBound =ppath.getProbability();
+			ranges.add(probabilityRange);
+			ppath.setRangeOfProbabilities(probabilityRange);
+			upperBound = ppath.getProbability();
+		}//List<AntsProbablePath> antsProbablePaths, double upperBound
+		String dec = this.problemSpace.getNodeName(listOfAntsProbablePaths,upperBound);
+		System.out.println(dec);
+
+	}
 }

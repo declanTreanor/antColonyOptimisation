@@ -29,11 +29,6 @@ public class ACOConfig {
 	public PheremoneManager getPheremoneMgr() {
 		return new PheremoneManager(initialPheremones());
 	}
-//	@Bean(name = {"PheremoneManagerTst"})
-//	public PheremoneManager getPheremoneMgrTst() {
-//		return new PheremoneManager(initialPheremonesBook());
-//	}
-
 	@Bean(name = {"ACOLockObject"})
 	public ACOLockObject getACOLockObject() {
 		return new ACOLockObject();
