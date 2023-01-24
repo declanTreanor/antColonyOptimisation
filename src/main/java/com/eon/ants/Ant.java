@@ -1,6 +1,7 @@
 package com.eon.ants;
 
 import com.eon.ants.concurrrency.ACOLockObject;
+import com.eon.ants.config.ACOConfig;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -16,7 +17,7 @@ public class Ant implements Runnable {
 	@Autowired
 	private ProblemSpace problemSpace;
 	@Autowired
-	@Qualifier("med")
+	@Qualifier(ACOConfig.MEDIUM)
 	private String[] nodeNames;
 	private final Random random = new Random();
 	private String startingNode;

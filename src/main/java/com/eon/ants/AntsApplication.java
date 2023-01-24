@@ -16,7 +16,7 @@ public class AntsApplication {
 		//		new AntsApplication().findShortestPath();
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ACOConfig.class);
 		PheremoneManager pheremoneManager = null;
-		Ant ant = null;
+		Ant ant;
 		for (int i = 0; i < 100; i++) {
 			if (i % 5 == 0) {
 				if (pheremoneManager == null)
@@ -34,11 +34,6 @@ public class AntsApplication {
 			ant.startOnRandomNode();
 
 			while (ant.getPathTaken().size() < ant.getNodeNames().length) {
-				//				/**
-				//				 * this was necessary because of an inexplicable (by me) bug.
-				//				 */
-				//				if("".equals(ant.getCurrentNode()))
-				//					ant.startOnRandomNode();
 
 				ant.moveToNextNode();
 

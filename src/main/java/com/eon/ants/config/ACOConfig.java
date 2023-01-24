@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Scope;
 @Configuration
 public class ACOConfig {
 
+	public static final String MEDIUM = "med";
+
 	@Bean("adjacency")
 	public double[][] adjacencymatrix() {
 		double[][] distanceMatrix = { { 0, 8, 7, 4, 6, 4 },
@@ -97,7 +99,7 @@ public class ACOConfig {
 		return distanceMatrix;
 	}
 
-	@Bean("med")
+	@Bean(MEDIUM)
 	public String[] nodeNames() {
 		return new String[] { "circus", "balloon", "bumpers", "carousel", "swings", "ferrisWheel" };
 	}
