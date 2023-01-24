@@ -26,23 +26,13 @@ public class PheremoneManager {
 	private String[] nodeNames;
 	private boolean isReady;
 
-	private record ShortestPath(double distance, List<String> path) {}
+	private record ShortestPath(double distance, List<String> path) {
+
+	}
 
 	private ShortestPath shortestPath;
 
-	@AllArgsConstructor
-	@Data
-	public class RouteDeets implements Comparable {
-
-		private double distance;
-		private List<String> path;
-
-		@Override
-		public int compareTo(Object o) {
-			return BigDecimal.valueOf(((RouteDeets) o).distance).
-					compareTo(BigDecimal.valueOf(this.distance));
-		}
-	}
+	private record RouteDeets(double distance, List<String> path) {}
 
 	;
 	private List<RouteDeets> allRoutes;
@@ -122,6 +112,7 @@ public class PheremoneManager {
 		}
 
 	}
+
 	public void saveRoute(Ant ant, int i) {
 		if (allRoutes == null)
 			allRoutes = new ArrayList<>();
@@ -129,12 +120,11 @@ public class PheremoneManager {
 		allRoutes.add(rd);
 
 		if (shortestPath == null || ant.getPathDistance() < shortestPath.distance) {
-			log.info("shortest path {} at iteration {}", shortestPath, i+1);
+			log.info("shortest path {} at iteration {}", shortestPath, i + 1);
 			shortestPath = new ShortestPath(ant.getPathDistance(), ant.getPathTaken());
 			all6RoutesFromDifferentStarts.put(ant.getStartingNode(), ant.getPathTaken());
-			allChanges.append("\npath taken: "+ant.getPathTaken()+" has distance "+ant.getPathDistance()+" at iteration "+(i+1));
+			allChanges.append("\npath taken: " + ant.getPathTaken() + " has distance " + ant.getPathDistance() + " at iteration " + (i + 1));
 		}
 	}
-
 
 }

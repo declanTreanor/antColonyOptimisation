@@ -31,15 +31,9 @@ public class AntsApplication {
 				}
 
 			}
-			ant = (Ant) ctx.getBean("Ant");
-			ant.startOnRandomNode();
 
-			while (ant.getPathTaken().size() < ant.getNodeNames().length) {
 
-				ant.moveToNextNode();
-
-			}
-			pheremoneManager.saveRoute(ant,i);
+			doRunAround(ctx, pheremoneManager, i);
 
 		}
 
@@ -49,6 +43,19 @@ public class AntsApplication {
 		System.out.println(pheremoneManager.getAll6RoutesFromDifferentStarts());
 		System.out.println("\n but (one of) the absolute shortest path(s) is: "+pheremoneManager.getShortestPath());
 
+	}
+
+	private static void doRunAround(ApplicationContext ctx, PheremoneManager pheremoneManager, int i) {
+		Ant ant;
+		ant = (Ant) ctx.getBean("Ant");
+		ant.startOnRandomNode();
+
+		while (ant.getPathTaken().size() < ant.getNodeNames().length) {
+
+			ant.moveToNextNode();
+
+		}
+		pheremoneManager.saveRoute(ant, i);
 	}
 
 	private static int getNumberOfAnts(int amountOfNodes) {
