@@ -1,6 +1,6 @@
 package com.eon.ants;
 
-import com.eon.ants.concurrrency.ACOLockObject;
+import com.eon.ants.concurrrency.ACOLockObjectPheremones;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -16,11 +16,12 @@ import java.util.stream.Collectors;
 public class PheremoneManager {
 
 	private StringBuilder allChanges = new StringBuilder("an audit trail of the paths, looks like this: \n");
+	private Map<String, List<String>> all6RoutesFromDifferentStarts = new HashMap<>();
 	@Autowired
 	@Qualifier("pheremones")
 	private double[][] pheremoneTrails;
 	@Autowired
-	private ACOLockObject lockObject;
+	private ACOLockObjectPheremones pheremoneLockObject;
 	@Autowired
 	@Qualifier("med")
 	private String[] nodeNames;
@@ -56,14 +57,14 @@ public class PheremoneManager {
 	protected double getPheremoneLevel(String from, String to) {
 		double pheremoneLevel;
 		try {
-			lockObject.readLock().lock();
+			pheremoneLockObject.readLock().lock();
 
 			int indexFrom = Arrays.asList(nodeNames).indexOf(from);
 			int indexTo = Arrays.asList(nodeNames).indexOf(to);
 			log.info("travelling from {} to {}", from, to);
 			pheremoneLevel = pheremoneTrails[indexFrom][indexTo];
 		} finally {
-			lockObject.readLock().unlock();
+			pheremoneLockObject.readLock().unlock();
 		}
 
 		return pheremoneLevel;
@@ -78,7 +79,6 @@ public class PheremoneManager {
 	private void checkForDuplicates() {
 		double[][] copy = pheremoneTrails;
 		List<String> projectedPath = new ArrayList<>();
-//		Set<String> uniqueNodeNames = new HashSet<>();
 
 		double largest = 0.0;
 		int winningIndex = 0;
@@ -92,8 +92,6 @@ public class PheremoneManager {
 			}
 			String nodeName = nodeNames[winningIndex];
 			projectedPath.add(nodeName);
-			//			if(!uniqueNodeNames.add(nodeName))
-			//				throw new IllegalArgumentException(nodeName+" not unique, in "+projectedPath);
 		}
 
 	}
@@ -105,14 +103,14 @@ public class PheremoneManager {
 	public synchronized void dropPheremone(Ant ant, int from, int to) {
 
 		try {
-			lockObject.writeLock().lock();
+			pheremoneLockObject.writeLock().lock();
 			try {
 				pheremoneTrails[from][to] += Ant.PHEREMONES;
 			} catch (IndexOutOfBoundsException ioobe) {
 				System.out.println();
 			}
 		} finally {
-			lockObject.writeLock().unlock();
+			pheremoneLockObject.writeLock().unlock();
 			if (isFullyPopulated(from, to))
 				consistencyCheck(from, to);
 		}
@@ -134,13 +132,14 @@ public class PheremoneManager {
 		allRoutes.add(rd);
 
 		if (shortestPath == null || ant.getPathDistance() < shortestPath.distance) {
+			log.info("shortest path {} at iteration {}", shortestPath, i+1);
 			shortestPath = new ShortestPath(ant.getPathDistance(), ant.getPathTaken());
+			all6RoutesFromDifferentStarts.put(ant.getStartingNode(), ant.getPathTaken());
 			allChanges.append("\npath taken: "+ant.getPathTaken()+" has distance "+ant.getPathDistance()+" at iteration "+(i+1));
 		}
-		System.out.println("rote66 " + allRoutes);
 	}
 
-	private void increaseNthNRouteBy(int n, double addition) {
+	private void increaseNthRouteBy(int n, double addition) {
 		List<String> nthPath = getSortedRoutes().get(n).getPath();
 		addEach(nthPath, addition);
 
@@ -170,11 +169,11 @@ public class PheremoneManager {
 		return sorted;
 	}
 
-	public void shitTax() {
-
-		multNtRhouteBy(0, 0.5);
-
-	}
+//	public void shitTax() {
+//
+//		multNtRhouteBy(0, 0.5);
+//
+//	}
 
 	private void addEach(List<String> path, double multiplier) {
 			String from = "";
@@ -196,7 +195,7 @@ public class PheremoneManager {
 
 	public void rewardBest() {
 
-		increaseNthNRouteBy(0, 5.0);
+		increaseNthRouteBy(allRoutes.size()-1, 5.0);
 
 	}
 }

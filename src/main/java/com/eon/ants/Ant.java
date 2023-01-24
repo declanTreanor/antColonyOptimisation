@@ -1,6 +1,6 @@
 package com.eon.ants;
 
-import com.eon.ants.concurrrency.ACOLockObject;
+import com.eon.ants.concurrrency.ACOLockObjectPheremones;
 import com.eon.ants.config.ACOConfig;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,8 +37,7 @@ public class Ant implements Runnable {
 		return pathDistance;
 	}
 
-	@Autowired
-	private ACOLockObject lockObject;
+
 
 	@Override
 	public void run() {
@@ -77,7 +76,6 @@ public class Ant implements Runnable {
 				", pathDistance=" + pathDistance +
 				", pathTaken=" + pathTaken +
 				", pheremoneManager=" + pheremoneManager +
-				", lockObject=" + lockObject +
 				'}';
 	}
 

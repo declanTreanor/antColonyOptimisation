@@ -3,8 +3,7 @@ package com.eon.ants.config;
 import com.eon.ants.Ant;
 import com.eon.ants.PheremoneManager;
 import com.eon.ants.ProblemSpace;
-import com.eon.ants.concurrrency.ACOLockObject;
-import org.springframework.beans.factory.annotation.Qualifier;
+import com.eon.ants.concurrrency.ACOLockObjectPheremones;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Scope;
@@ -54,11 +53,10 @@ public class ACOConfig {
 		return new PheremoneManager(initialPheremones());
 	}
 
-	@Bean(name = { "ACOLockObject" })
-	public ACOLockObject getACOLockObject() {
-		return new ACOLockObject();
+	@Bean
+	public ACOLockObjectPheremones getObjectLock(){
+		return new ACOLockObjectPheremones();
 	}
-
 	@Bean(name = { "ant", "Ant" })
 	@Scope(value = "prototype")
 	public Ant getAnt() {

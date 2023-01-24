@@ -17,19 +17,17 @@ public class AntsApplication {
 		ApplicationContext ctx = new AnnotationConfigApplicationContext(ACOConfig.class);
 		PheremoneManager pheremoneManager = null;
 		Ant ant;
-		for (int i = 0; i < 100; i++) {
+		int amountOfAnts = getNumberOfAnts(ctx.getBean(ACOConfig.class).nodeNames().length);
+		for (int i = 0; i < amountOfAnts; i++) {
 			if (i % 5 == 0) {
 				if (pheremoneManager == null)
 					pheremoneManager = (PheremoneManager) ctx.getBean("PheremoneManager");
-				else
+				else {
 					pheremoneManager.evaporate(0.9D);
+					pheremoneManager.rewardBest();
+				}
 
 			}
-			if (pheremoneManager != null && i % 7 == 0 && pheremoneManager.getAllRoutes() != null) {
-				pheremoneManager.rewardBest();
-				pheremoneManager.shitTax();
-			}
-
 			ant = (Ant) ctx.getBean("Ant");
 			ant.startOnRandomNode();
 
@@ -38,14 +36,24 @@ public class AntsApplication {
 				ant.moveToNextNode();
 
 			}
-			pheremoneManager.saveRoute(ant
-					,i);
+			pheremoneManager.saveRoute(ant,i);
 
 		}
 
 
 		System.out.println(pheremoneManager.getAllChanges().toString());
+		System.out.println("\nthe following comprises the best attempts found, though not looked-for (so, therefore not definitive), starting at various attractions:\n");
+		System.out.println(pheremoneManager.getAll6RoutesFromDifferentStarts());
+		System.out.println("\n but (one of) the absolute shortest path(s) is: "+pheremoneManager.getShortestPath());
 
+	}
+
+	private static int getNumberOfAnts(int amountOfNodes) {
+		int amount = 1;
+		for(int i=1; i<amountOfNodes; i++)
+			amount *= i;
+
+		return amount;
 	}
 
 }
