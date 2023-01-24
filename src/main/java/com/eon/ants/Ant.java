@@ -3,23 +3,25 @@ package com.eon.ants;
 import com.eon.ants.concurrrency.ACOLockObject;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.util.*;
 
 @Data
 public class Ant implements Runnable {
 
-	public static final double PHEREMONES = 2.3;
+	public static final double PHEREMONES = 1.0;
 	@Autowired
 	private PheremoneManager pheremoneManager;
 	@Autowired
 	private ProblemSpace problemSpace;
 	@Autowired
+	@Qualifier("med")
 	private String[] nodeNames;
 	private final Random random = new Random();
 	private String startingNode;
 	private String currentNode;
-	private double pathDistance = Double.MIN_NORMAL;
+	private double pathDistance = 0.0D;
 	private List<String> pathTaken = new ArrayList<>();
 
 	public Ant(ProblemSpace attractionMap) {
@@ -107,7 +109,8 @@ public class Ant implements Runnable {
 		int indexNext= Arrays.asList(nodeNames).indexOf(nextName);
 
 		pheremoneManager.consistencyCheck(Arrays.asList(nodeNames).indexOf(currentNode),Arrays.asList(nodeNames).indexOf(nextName));
-		this.pathDistance+=problemSpace.getAdjacencyMatrix()[indexCurrent][indexNext];
+		double[][] peek=problemSpace.getAdjacencyMatrix();
+		this.pathDistance+=peek[indexCurrent][indexNext];
 
 		pheremoneManager.dropPheremone(this,indexCurrent,indexNext);
 		this.currentNode = nextName;

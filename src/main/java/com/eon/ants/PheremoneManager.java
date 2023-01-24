@@ -1,6 +1,7 @@
 package com.eon.ants;
 
 import com.eon.ants.concurrrency.ACOLockObject;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -8,20 +9,45 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Data
 @Slf4j
 public class PheremoneManager {
 
+	private StringBuilder allChanges = new StringBuilder("an audit trail of the paths, looks like this: \n");
 	@Autowired
 	@Qualifier("pheremones")
 	private double[][] pheremoneTrails;
 	@Autowired
 	private ACOLockObject lockObject;
 	@Autowired
+	@Qualifier("med")
 	private String[] nodeNames;
 	private boolean isReady;
-	private Map<Double, List<String>> allRoutes;
+
+	private record ShortestPath(double distance, List<String> path) {
+
+	}
+
+	private ShortestPath shortestPath;
+
+	@AllArgsConstructor
+	@Data
+	public class RouteDeets implements Comparable {
+
+		private double distance;
+		private List<String> path;
+
+		@Override
+		public int compareTo(Object o) {
+			return BigDecimal.valueOf(((RouteDeets) o).distance).
+					compareTo(BigDecimal.valueOf(this.distance));
+		}
+	}
+
+	;
+	private List<RouteDeets> allRoutes;
 
 	public PheremoneManager(double[][] pheremoneTrails) {
 		this.pheremoneTrails = pheremoneTrails;
@@ -52,7 +78,7 @@ public class PheremoneManager {
 	private void checkForDuplicates() {
 		double[][] copy = pheremoneTrails;
 		List<String> projectedPath = new ArrayList<>();
-		Set<String> uniqueNodeNames = new HashSet<>();
+//		Set<String> uniqueNodeNames = new HashSet<>();
 
 		double largest = 0.0;
 		int winningIndex = 0;
@@ -101,61 +127,76 @@ public class PheremoneManager {
 		}
 
 	}
+	public void saveRoute(Ant ant, int i) {
+		if (allRoutes == null)
+			allRoutes = new ArrayList<>();
+		RouteDeets rd = new RouteDeets(ant.getPathDistance(), ant.getPathTaken());
+		allRoutes.add(rd);
 
-	public List<String> displayShortestPath() {
-		List<String> shortestPath = new ArrayList<>();
-		for (int i = 0; i < pheremoneTrails.length; i++) {
-			BigDecimal most = BigDecimal.ZERO;
-			int winningIndex = 0;
-			for (int j = 0; j < pheremoneTrails.length; j++) {
-				BigDecimal bigDecimal = new BigDecimal(String.valueOf(pheremoneTrails[i][j]));
-				/**
-				 * This indefensible hack is to get around the bug! Not the shortest path! :(
-				 */
-				if (bigDecimal.compareTo(most) > 0) {
-					most = bigDecimal;
-					winningIndex = j;
-				}
-			}
-			shortestPath.add(this.nodeNames[winningIndex]);
-
+		if (shortestPath == null || ant.getPathDistance() < shortestPath.distance) {
+			shortestPath = new ShortestPath(ant.getPathDistance(), ant.getPathTaken());
+			allChanges.append("\npath taken: "+ant.getPathTaken()+" has distance "+ant.getPathDistance()+" at iteration "+(i+1));
 		}
-		return shortestPath;
+		System.out.println("rote66 " + allRoutes);
 	}
 
-	public void saveRoute(Ant ant) {
-		if (allRoutes == null)
-			allRoutes = new TreeMap<>();
-		allRoutes.put(ant.getPathDistance(), ant.getPathTaken());
-		System.out.println(allRoutes);
+	private void increaseNthNRouteBy(int n, double addition) {
+		List<String> nthPath = getSortedRoutes().get(n).getPath();
+		addEach(nthPath, addition);
+
+	}
+	private void multNtRhouteBy(int n, double addition) {
+		List<String> nthPath = getSortedRoutes().get(n).getPath();
+		multiplyEach(nthPath, addition);
+
+	}
+
+	private void multiplyEach(List<String> nthPath, double multiplier) {
+		String from = "";
+		for (String node : nthPath) {
+			if (from.equals(""))
+				from = node;
+			else {
+				int indexFrom = Arrays.asList(nodeNames).indexOf(from);
+				int indexTo = Arrays.asList(nodeNames).indexOf(node);
+				from = node;
+				pheremoneTrails[indexFrom][indexTo] = pheremoneTrails[indexFrom][indexTo] * multiplier;
+			}
+		}
+	}
+
+	public List<PheremoneManager.RouteDeets> getSortedRoutes() {
+		List<PheremoneManager.RouteDeets> sorted = allRoutes.stream().sorted().collect(Collectors.toList());
+		return sorted;
 	}
 
 	public void shitTax() {
-		List<Map.Entry<Double, List<String>>> b5 = allRoutes.entrySet().stream().filter(es->es.getKey()>30).toList();
-		b5.forEach(route -> multiplyEach(route.getValue(),.5));
+
+		multNtRhouteBy(0, 0.5);
+
 	}
 
-	private void multiplyEach(List<String> path, double multiplier) {
-		String from = "";
+	private void addEach(List<String> path, double multiplier) {
+			String from = "";
 		for (String node : path) {
-			if (from.equals("") )
+			if (from.equals(""))
 				from = node;
 			else {
 				try {
 					int indexFrom = Arrays.asList(nodeNames).indexOf(from);
 					int indexTo = Arrays.asList(nodeNames).indexOf(node);
 					from = node;
-					pheremoneTrails[indexFrom][indexTo] = pheremoneTrails[indexFrom][indexTo] * multiplier;
+					pheremoneTrails[indexFrom][indexTo] = pheremoneTrails[indexFrom][indexTo] + multiplier;
 				} catch (ArrayIndexOutOfBoundsException aioob) {
 					System.out.println();
 				}
 			}
 		}
 	}
-	public void rewardBestOfTen () {
-		int indexOfBest = allRoutes.entrySet().stream().toList().size() - 1;
-		List<String> best = allRoutes.entrySet().stream().toList().get(indexOfBest).getValue();
-		multiplyEach(best, 2.0);
+
+	public void rewardBest() {
+
+		increaseNthNRouteBy(0, 5.0);
 
 	}
 }

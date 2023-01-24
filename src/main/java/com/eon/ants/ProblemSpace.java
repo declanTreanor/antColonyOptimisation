@@ -23,6 +23,7 @@ public class ProblemSpace {
 	@Qualifier("pheremones")
 	private double[][] pheremones;
 	@Autowired
+	@Qualifier("med")
 	private String[] nodeNames;
 	@Autowired
 	private PheremoneManager pheremoneManager;
