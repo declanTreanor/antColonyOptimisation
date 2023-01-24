@@ -8,6 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
 
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
 @SpringBootApplication
 public class AntsApplication {
 
@@ -19,12 +22,12 @@ public class AntsApplication {
 		Ant ant;
 		int amountOfAnts = getNumberOfAnts(ctx.getBean(ACOConfig.class).nodeNames().length);
 		for (int i = 0; i < amountOfAnts; i++) {
+
 			if (i % 5 == 0) {
 				if (pheremoneManager == null)
 					pheremoneManager = (PheremoneManager) ctx.getBean("PheremoneManager");
 				else {
 					pheremoneManager.evaporate(0.9D);
-					pheremoneManager.rewardBest();
 				}
 
 			}

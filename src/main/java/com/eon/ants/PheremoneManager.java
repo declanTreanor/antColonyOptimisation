@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Data
 @Slf4j
@@ -27,9 +26,7 @@ public class PheremoneManager {
 	private String[] nodeNames;
 	private boolean isReady;
 
-	private record ShortestPath(double distance, List<String> path) {
-
-	}
+	private record ShortestPath(double distance, List<String> path) {}
 
 	private ShortestPath shortestPath;
 
@@ -139,63 +136,5 @@ public class PheremoneManager {
 		}
 	}
 
-	private void increaseNthRouteBy(int n, double addition) {
-		List<String> nthPath = getSortedRoutes().get(n).getPath();
-		addEach(nthPath, addition);
 
-	}
-	private void multNtRhouteBy(int n, double addition) {
-		List<String> nthPath = getSortedRoutes().get(n).getPath();
-		multiplyEach(nthPath, addition);
-
-	}
-
-	private void multiplyEach(List<String> nthPath, double multiplier) {
-		String from = "";
-		for (String node : nthPath) {
-			if (from.equals(""))
-				from = node;
-			else {
-				int indexFrom = Arrays.asList(nodeNames).indexOf(from);
-				int indexTo = Arrays.asList(nodeNames).indexOf(node);
-				from = node;
-				pheremoneTrails[indexFrom][indexTo] = pheremoneTrails[indexFrom][indexTo] * multiplier;
-			}
-		}
-	}
-
-	public List<PheremoneManager.RouteDeets> getSortedRoutes() {
-		List<PheremoneManager.RouteDeets> sorted = allRoutes.stream().sorted().collect(Collectors.toList());
-		return sorted;
-	}
-
-//	public void shitTax() {
-//
-//		multNtRhouteBy(0, 0.5);
-//
-//	}
-
-	private void addEach(List<String> path, double multiplier) {
-			String from = "";
-		for (String node : path) {
-			if (from.equals(""))
-				from = node;
-			else {
-				try {
-					int indexFrom = Arrays.asList(nodeNames).indexOf(from);
-					int indexTo = Arrays.asList(nodeNames).indexOf(node);
-					from = node;
-					pheremoneTrails[indexFrom][indexTo] = pheremoneTrails[indexFrom][indexTo] + multiplier;
-				} catch (ArrayIndexOutOfBoundsException aioob) {
-					System.out.println();
-				}
-			}
-		}
-	}
-
-	public void rewardBest() {
-
-		increaseNthRouteBy(allRoutes.size()-1, 5.0);
-
-	}
 }
