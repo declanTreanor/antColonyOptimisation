@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.*;
 class PheremoneManagerTest {
 
 	@Autowired
-	@Qualifier("PheremoneManager")
 	private PheremoneManager mgr;
 	@Test
 	void getPheremoneLevels() {

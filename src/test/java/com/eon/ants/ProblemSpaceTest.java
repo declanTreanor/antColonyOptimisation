@@ -22,7 +22,6 @@ class ProblemSpaceTest {
 	@Qualifier(value = "med")
 	private String[] nodeNames;
 	@Autowired
-	@Qualifier(value = "problemSpaceForTest")
 	private ProblemSpace problemSpace;
 	@Autowired
 	private Ant ant;
