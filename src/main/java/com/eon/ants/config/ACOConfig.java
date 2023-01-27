@@ -1,12 +1,11 @@
 package com.eon.ants.config;
 
-import com.eon.ants.Ant;
-import com.eon.ants.PheremoneManager;
-import com.eon.ants.ProblemSpace;
+import com.eon.ants.domain.Ant;
+import com.eon.ants.service.PheremoneManager;
+import com.eon.ants.service.ProblemSpace;
 import com.eon.ants.concurrrency.ACOLockObjectPheremones;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 
 @Configuration
 public class ACOConfig {
@@ -48,30 +47,7 @@ public class ACOConfig {
 
 	}
 
-	@Bean(name = { "PheremoneManager" })
-	public PheremoneManager getPheremoneMgr() {
-		return new PheremoneManager(initialPheremones());
-	}
 
-	@Bean
-	public ACOLockObjectPheremones getObjectLock(){
-		return new ACOLockObjectPheremones();
-	}
-	@Bean(name = { "ant", "Ant" })
-	@Scope(value = "prototype")
-	public Ant getAnt() {
-		return new Ant(problemSpaceReal());
-	}
-
-	@Bean(name = "problemSpace")
-	public ProblemSpace problemSpaceReal() {
-		return new ProblemSpace(initialPheremones());
-	}
-
-	@Bean(name = "problemSpaceForTest")
-	public ProblemSpace problemSpaceTst() {
-		return new ProblemSpace(initialPheremonesBook());
-	}
 
 	@Bean("pheremones")//"circus", "balloon", "bumpers", "carousel", "swings", "ferrisWheel"
 	public double[][] initialPheremones() {

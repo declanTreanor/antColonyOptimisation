@@ -1,15 +1,22 @@
-package com.eon.ants;
+package com.eon.ants.service;
 
+import com.eon.ants.config.ACOConfig;
+import com.eon.ants.domain.Ant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.Range;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
+import org.springframework.stereotype.Component;
+
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Slf4j
 @Data
+@Component
 public class ProblemSpace {
 
 	@Autowired
@@ -23,6 +30,8 @@ public class ProblemSpace {
 	private String[] nodeNames;
 	@Autowired
 	private PheremoneManager pheremoneManager;
+	@Autowired
+	private ApplicationContext ctx;
 
 
 	protected static final short ALPHA = 1;
@@ -49,7 +58,7 @@ public class ProblemSpace {
 	 * @param destination
 	 * @return
 	 */
-	protected double probabilityChoosingPath(Ant ant, String destination) {
+	public double probabilityChoosingPath(Ant ant, String destination) {
 		double denominator = 0;
 		for (String possibleDestinationN : possibleDestinations(ant)) {
 			if (!Arrays.asList(nodeNames).contains(ant.getCurrentNode()))
@@ -70,13 +79,59 @@ public class ProblemSpace {
 		return topA * topB;
 	}
 
+	public List<String> determineShortestPath(){
+		int amountOfAnts = getNumberOfAnts(ctx.getBean(ACOConfig.class).nodeNames().length);
+		for (int i = 0; i < amountOfAnts; i++) {
+			CompletableFuture<Void> cf = CompletableFuture.runAsync(new Ant(this));
+
+			if (i % 5 == 0) {
+				if (pheremoneManager == null)
+					pheremoneManager = (PheremoneManager) ctx.getBean("PheremoneManager");
+				else {
+					pheremoneManager.evaporate(0.9D);
+				}
+
+			}
+
+
+			doRunAround(pheremoneManager, i);
+
+		}
+
+		System.out.println(pheremoneManager.getAllChanges().toString());
+		System.out.println("\nthe following comprises the best attempts found, though not looked-for (so, therefore not definitive), starting at various attractions:\n");
+		System.out.println(pheremoneManager.getAll6RoutesFromDifferentStarts());
+		System.out.println("\n but (one of) the absolute shortest path(s) is: "+pheremoneManager.getShortestPath());
+
+		return pheremoneManager.getShortestPath().path();
+	}
+	private int getNumberOfAnts(int amountOfNodes) {
+		int amount = 1;
+		for(int i=1; i<amountOfNodes; i++)
+			amount *= i;
+
+		return amount;
+	}
+	private void doRunAround(PheremoneManager pheremoneManager, int i) {
+		Ant ant = (Ant) ctx.getBean("Ant");
+		ant.startOnRandomNode();
+
+		while (ant.getPathTaken().size() < ant.getNodeNames().length) {
+
+			ant.moveToNextNode();
+
+		}
+		pheremoneManager.saveRoute(ant, i);
+	}
+
+
 	private String[] possibleDestinations(Ant ant) {
 		return ant.getAttractionsLeft();
 	}
 
 	List<AntsProbablePath> antsProbablePaths = new ArrayList<>();
 
-	protected String chooseNextNode(Ant ant) {
+	public String chooseNextNode(Ant ant) {
 
 		List<AntsProbablePath> antsProbablePaths = new ArrayList<>();
 		List<String> attractionsLeft = new ArrayList<>(Arrays.asList(ant.getAttractionsLeft()));
@@ -105,7 +160,7 @@ public class ProblemSpace {
 		return nodeName;
 	}
 
-	protected String getNodeName(List<AntsProbablePath> antsProbablePaths, double upperBound) {
+	public String getNodeName(List<AntsProbablePath> antsProbablePaths, double upperBound) {
 		double randomDouble = 0;
 		try {
 			randomDouble = new Random().nextDouble(upperBound);
@@ -137,7 +192,7 @@ public class ProblemSpace {
 	 * @param pathA
 	 * @return
 	 */
-	protected double findLength(List<String> pathA) {
+	public double findLength(List<String> pathA) {
 		String startingNode = pathA.get(0);
 		double totalDistance = 0.0;
 		for (String attraction : pathA) {

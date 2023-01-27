@@ -1,14 +1,17 @@
-package com.eon.ants;
+package com.eon.ants.domain;
 
-import com.eon.ants.concurrrency.ACOLockObjectPheremones;
+import com.eon.ants.service.PheremoneManager;
+import com.eon.ants.service.ProblemSpace;
 import com.eon.ants.config.ACOConfig;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
 import java.util.*;
 
 @Data
+@Component("Ant")
 public class Ant implements Runnable {
 
 	public static final double PHEREMONES = 1.0;
@@ -42,15 +45,17 @@ public class Ant implements Runnable {
 	@Override
 	public void run() {
 		startOnRandomNode();
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
+		while(pathIncomplete()){
+			moveToNextNode();
 		}
-		moveToNextNode();
+
 	}
 
-//	public void moveToNext() {
+	private boolean pathIncomplete() {
+		return this.pathTaken.size()<nodeNames.length;
+	}
+
+	//	public void moveToNext() {
 //
 //		String nextNode = problemSpace.chooseNextNode(this);
 //		if (!Arrays.asList(this.pathTaken).contains(nextNode))
@@ -79,14 +84,14 @@ public class Ant implements Runnable {
 				'}';
 	}
 
-	protected void startOn(String startingNode) {
+	public void startOn(String startingNode) {
 		this.pathDistance=0.0;
 		this.startingNode = startingNode;
 		this.currentNode = startingNode;
 		pathTaken.add(startingNode);
 	}
 
-	protected void startOnRandomNode() {
+	public void startOnRandomNode() {
 		this.pathDistance=0.0;
 		this.pathTaken = new ArrayList<>();
 		int indexOfStartNode = random.nextInt(nodeNames.length - 1);
@@ -99,7 +104,7 @@ public class Ant implements Runnable {
 
 	}
 
-	protected void moveToNextNode() {
+	public void moveToNextNode() {
 
 
 		String nextName = problemSpace.chooseNextNode(this);
@@ -116,7 +121,7 @@ public class Ant implements Runnable {
 
 	}
 
-	protected String[] getAttractionsLeft() {
+	public String[] getAttractionsLeft() {
 		List<String> list = new ArrayList<>(Arrays.asList(nodeNames));
 		list.removeAll(this.pathTaken);
 		return list.toArray(new String[0]);

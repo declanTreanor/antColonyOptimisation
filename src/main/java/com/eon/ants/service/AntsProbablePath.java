@@ -1,4 +1,4 @@
-package com.eon.ants;
+package com.eon.ants.service;
 
 import lombok.Getter;
 import org.apache.commons.lang3.Range;

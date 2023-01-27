@@ -1,5 +1,8 @@
 package com.eon.ants;
 
+import com.eon.ants.domain.Ant;
+import com.eon.ants.service.AntsProbablePath;
+import com.eon.ants.service.ProblemSpace;
 import org.apache.commons.lang3.Range;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 class ProblemSpaceTest {
 	@Autowired
+	@Qualifier(value = "med")
 	private String[] nodeNames;
 	@Autowired
 	@Qualifier(value = "problemSpaceForTest")

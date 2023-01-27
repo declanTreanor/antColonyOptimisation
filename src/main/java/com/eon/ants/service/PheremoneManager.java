@@ -1,17 +1,18 @@
-package com.eon.ants;
+package com.eon.ants.service;
 
 import com.eon.ants.concurrrency.ACOLockObjectPheremones;
-import lombok.AllArgsConstructor;
+import com.eon.ants.domain.Ant;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.stereotype.Component;
 
-import java.math.BigDecimal;
 import java.util.*;
 
 @Data
 @Slf4j
+@Component
 public class PheremoneManager {
 
 	private StringBuilder allChanges = new StringBuilder("an audit trail of the paths, looks like this: \n");
@@ -26,7 +27,7 @@ public class PheremoneManager {
 	private String[] nodeNames;
 	private boolean isReady;
 
-	private record ShortestPath(double distance, List<String> path) {
+	public record ShortestPath(double distance, List<String> path) {
 
 	}
 
@@ -37,11 +38,11 @@ public class PheremoneManager {
 	;
 	private List<RouteDeets> allRoutes;
 
-	public PheremoneManager(double[][] pheremoneTrails) {
+	public PheremoneManager(@Qualifier("pheremones") double[][] pheremoneTrails) {
 		this.pheremoneTrails = pheremoneTrails;
 	}
 
-	protected double getPheremoneLevel(String from, String to) {
+	public double getPheremoneLevel(String from, String to) {
 		double pheremoneLevel;
 		try {
 			pheremoneLockObject.readLock().lock();
