@@ -25,8 +25,7 @@ class ProblemSpaceTest {
 	private ProblemSpace problemSpace;
 	@Autowired
 	private Ant ant;
-	@Autowired
-	private ApplicationContext appContext;
+
 
 	@Test
 	void probabilityChoosingPath_circusToFerrisWheel() {

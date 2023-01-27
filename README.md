@@ -4,4 +4,4 @@ This is a springboot app, that is an implementation of the Ant Colony Opimisatio
 
 # How to use
 
-The starting point, is the unit test ProblemSpaceTest. Here is modelled an example from the aforementioned book.
+The starting point, is the unit test com.eon.ants.service.ProblemSpaceTest. Here is modelled an example from the aforementioned book.
