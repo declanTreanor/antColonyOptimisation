@@ -25,7 +25,6 @@ public class PheremoneManager {
 	@Autowired
 	@Qualifier("med")
 	private String[] nodeNames;
-	private boolean isReady;
 
 	public record ShortestPath(double distance, List<String> path) {
 
@@ -33,7 +32,9 @@ public class PheremoneManager {
 
 	private ShortestPath shortestPath;
 
-	private record RouteDeets(double distance, List<String> path) {}
+	private record RouteDeets(double distance, List<String> path) {
+
+	}
 
 	;
 	private List<RouteDeets> allRoutes;
@@ -92,11 +93,7 @@ public class PheremoneManager {
 
 		try {
 			pheremoneLockObject.writeLock().lock();
-			try {
-				pheremoneTrails[from][to] += Ant.PHEREMONES;
-			} catch (IndexOutOfBoundsException ioobe) {
-				System.out.println();
-			}
+			pheremoneTrails[from][to] += Ant.PHEREMONES;
 		} finally {
 			pheremoneLockObject.writeLock().unlock();
 			if (isFullyPopulated(from, to))

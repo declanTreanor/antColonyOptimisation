@@ -42,27 +42,13 @@ public class ProblemSpace {
 	}
 
 	/**
-	 * Given two distinct, full paths, this returns the shortest path, in terms of distance.
-	 * @param pathA
-	 * @param pathB
-	 * @return if <tt>findLength(pathA) >= findLength(pathB)</tt>, returns pathB, returns pathA in all other cases.
-	 */
-	public List<String> findShortestPath(List<String> pathA, List<String> pathB) {
-		if (findLength(pathA) >= findLength(pathB))
-			return pathB;
-		else
-			return pathA;
-	}
-
-	/**
 	 * @param destination
 	 * @return
 	 */
 	public double probabilityChoosingPath(Ant ant, String destination) {
 		double denominator = 0;
 		for (String possibleDestinationN : possibleDestinations(ant)) {
-			if (!Arrays.asList(nodeNames).contains(ant.getCurrentNode()))
-				System.out.println();
+
 			denominator += getNumerator(ant.getCurrentNode(), possibleDestinationN);
 
 		}
@@ -84,15 +70,8 @@ public class ProblemSpace {
 		for (int i = 0; i < amountOfAnts; i++) {
 			CompletableFuture<Void> cf = CompletableFuture.runAsync(new Ant(this));
 
-			if (i % 5 == 0) {
-				if (pheremoneManager == null)
-					pheremoneManager = (PheremoneManager) ctx.getBean("PheremoneManager");
-				else {
-					pheremoneManager.evaporate(0.9D);
-				}
-
-			}
-
+			if (i % 5 == 0)
+				pheremoneManager.evaporate(0.9D);
 
 			doRunAround(pheremoneManager, i);
 
@@ -151,12 +130,7 @@ public class ProblemSpace {
 			overallLargestProbability = ppath.getProbability();
 		}
 		String nodeName = getNodeName(antsProbablePaths, overallLargestProbability);
-		if (ant.getPathTaken().contains(nodeName)) {
-			while (ant.getPathTaken().contains(nodeName)) {
-				nodeName = nodeNames[new Random().nextInt(nodeNames.length - 1)];
-			}
 
-		}
 		return nodeName;
 	}
 
