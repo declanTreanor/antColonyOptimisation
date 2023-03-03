@@ -8,4 +8,4 @@ The starting point, is the unit test com.eon.ants.service.ProblemSpaceTest. Here
 
 # The Problem
 
-This is a variation of the travelling salesman Problem, in which the task is to find the fastest route around an amusement park, visiting all attractions exactly once. The idea is that given an adjacency matrix, with a corresponding list of attractions, using ACO, find a shortest possible route.
+This is a variation of the travelling salesman Problem, in which the task is to find the fastest route around an amusement park, visiting all attractions exactly once. The idea is that, given an adjacency matrix, with a corresponding list of attractions, using ACO, find a shortest possible route.
